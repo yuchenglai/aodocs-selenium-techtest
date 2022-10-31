@@ -45,7 +45,7 @@ public class WebDriverUtility {
     private static FirefoxOptions getFireFoxOptions() {
         FirefoxOptions options = new FirefoxOptions();
         FirefoxProfile profile = new FirefoxProfile();
-        //profile.setPreference("intl.accept_languages", "en-GB");
+        profile.setPreference("intl.accept_languages", "en-GB");
         options.setProfile(profile);
         return options;
     }

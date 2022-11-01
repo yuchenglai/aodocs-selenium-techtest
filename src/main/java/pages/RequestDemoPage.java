@@ -66,9 +66,9 @@ public class RequestDemoPage {
         fieldYourCompanyName.sendKeys(companyName);
     }
 
-    public void setCompanySize(){
+    public void setCompanySize(String companySize){
         Select selectCompanySize = new Select(dropdownCompanySize);
-        selectCompanySize.selectByValue(COMPANY_SIZE_ZERO_TO_FOUR);
+        selectCompanySize.selectByValue(companySize);
     }
 
     public void setCountry(){

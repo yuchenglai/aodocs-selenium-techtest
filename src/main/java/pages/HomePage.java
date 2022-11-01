@@ -25,10 +25,10 @@ public class HomePage {
     private String acceptGDPRJavaScript = "document.getElementById('ccc-notify-accept').click()";
 
     //Constructor
-    public HomePage(WebDriver driver){
+    public HomePage(WebDriver driver, String baseURL){
         this.driver=driver;
         this.waitAction = new WaitAction(driver);
-        driver.get(PAGE_URL);
+        driver.get(baseURL);
         //Initialise Elements
         PageFactory.initElements(driver, this);
     }

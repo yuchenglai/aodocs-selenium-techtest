@@ -1,36 +1,35 @@
 package test;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;
+import pages.GoogleResultPage;
 import pages.HomePage;
 import pages.RequestDemoPage;
+import pages.SearchGooglePage;
 import selenium.driver.WebDriverUtility;
 import selenium.driver.Browser;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-import java.io.FileReader;
+import utils.CompanySize;
+import utils.PropertyLoader;
+import java.util.Map;
 
 public class TestRequestDemo {
 
-    WebDriver driver;
-    FileReader reader=new FileReader("src/main/resources/test.properties");
-    Properties props = new Properties();
+    public static WebDriver driver;
 
+    public static PropertyLoader propertyLoader;
 
-
-    public TestRequestDemo() throws Exception {
+    public TestRequestDemo(){
+        propertyLoader = new PropertyLoader();
     }
 
     @BeforeEach
     public void setup(){
-        //use Chrome Driver
-        driver = WebDriverUtility.getWebDriver(Browser.CHROME);
-        driver.manage().window().maximize();
+        String browser = propertyLoader.getPropertyValue("browser").toString();
+        if (browser.equalsIgnoreCase("Chrome")) {
+            driver = WebDriverUtility.getWebDriver(Browser.CHROME);
+        } else if (browser.equalsIgnoreCase("Firefox")) {
+            driver = WebDriverUtility.getWebDriver(Browser.FIREFOX);
+        }
     }
 
     @AfterEach
@@ -39,153 +38,33 @@ public class TestRequestDemo {
     }
 
     @Test
-    void test01() throws IOException {
+    void test01() {
 
-        props.load(reader);
-        System.out.println(props.get("baseUrlProd"));
-        System.out.println(props.get(props.get("test01_demo_company_size").toString()));
+        // Handle Google GDPR setting, then search AODocs on Google, check that the browser redirects to AODocs result page
+        SearchGooglePage searchGooglePage = new SearchGooglePage(driver, propertyLoader);
+        searchGooglePage.acceptGoogleGDPR();
+        GoogleResultPage googleResultPage = searchGooglePage.searchKeyword("AODocs");
+        Assertions.assertTrue(googleResultPage.getSearchResultPageTitle().contains("AODocs"));
 
-        HomePage homePage = new HomePage(driver,props.get("baseUrlProd").toString());// Improvement needed: wait for page to load fully
+        // In the result, open website www.aodocs.com, check that the site is open
+        HomePage homePage = googleResultPage.clickAODocsSearchResult();
+        Assertions.assertEquals("https://www.aodocs.com/",driver.getCurrentUrl());
+
+        // Handle aodocs.com GDPR setting, then click Request a demo button
         homePage.clickAcceptGDPRJavaScript();
-        homePage.clickOnRequestDemoButton();
+        RequestDemoPage requestDemoPage = homePage.clickOnRequestDemoButton();
 
-        RequestDemoPage requestDemoPage = new RequestDemoPage(driver);// Improvement needed: wait for page to load fully
-        requestDemoPage.setFirstName(props.get("test01_demo_firstname").toString());
-        requestDemoPage.setLastName(props.get("test01_demo_lastname").toString());
+        // Enter my first name, leave last name empty, put a random email address and choose a company size
+        requestDemoPage.setFirstName("Yucheng");
         requestDemoPage.setLastName("");
-        Assertions.assertEquals("Please complete this required field.",requestDemoPage.getSingleErrorMsg());
+        requestDemoPage.setEmail("random#$%");
+        requestDemoPage.setCompanySize(CompanySize.SIZE_5_50.getValue());
 
-        requestDemoPage.setLastName(props.get("test01_demo_lastname").toString());
-        requestDemoPage.setEmail(props.get("test01_demo_email").toString());
-        requestDemoPage.setCompanySize(props.get(props.get("test01_demo_company_size").toString()).toString());
-        Assertions.assertEquals("Email must be formatted correctly.",requestDemoPage.getSingleErrorMsg());
-
+        // Fetch all error messages and store them to a map. Then check them one by one
+        Map<String, String> errorMessageList = requestDemoPage.mapErrorMessages();
+        requestDemoPage.checkErrorMessage(RequestDemoPage.ERROR_MSG_REQUIRED_FIELD, errorMessageList.get("lastname"));
+        requestDemoPage.checkErrorMessage(RequestDemoPage.ERROR_MSG_WRONG_EMAIL_FORMAT, errorMessageList.get("email"));
 
     }
 
-//    @Test
-//    void test02(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test03(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test04(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test05(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test06(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test07(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test08(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test09(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test10(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test11(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test12(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test13(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test14(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
-//
-//    @Test
-//    void test15(){
-//
-//        HomePage homePage = new HomePage(driver);// Improvement needed: wait for page to load fully
-//        homePage.clickAcceptGDPRJavaScript();
-//        homePage.clickOnRequestDemoButton();
-//
-//    }
 }
